@@ -4,11 +4,11 @@ module InstructionMem #(parameter N = 256) (
 );
     logic [31:0] mem [0:N-1];
     
-`ifdef MEM_PATH
-    initial $readmemh(`MEM_PATH, mem);
-`else
-    initial $readmemh("fib.hex", mem);
-`endif
+    `ifdef MEM_PATH
+        initial $readmemh(`MEM_PATH, mem);
+    `else
+        initial $readmemh("programs/fibonacci.hex", mem);
+    `endif
 
     assign Instruction = mem[pc[31:2]];
 endmodule
