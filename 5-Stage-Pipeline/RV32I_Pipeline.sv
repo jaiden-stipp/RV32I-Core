@@ -7,13 +7,14 @@ module RV32I_Pipeline(
 	ctrl_t ctrl_WB, ctrl_ID, ctrl_EX, ctrl_MEM;
     // Stage 1: IF
     logic [31:0] pc, pc_target, Instruction;
-    logic pc_src;
+    logic pc_src, stall;
 
     PC_IF pc_if (
         .clk(clk),
         .rst(rst),
         .pc_target(pc_target),
         .pc_src(pc_src),
+        .stall(stall),
         .pc(pc)
     );
 
@@ -24,10 +25,12 @@ module RV32I_Pipeline(
 
     // IF/ID register
     logic [31:0] pc_ID, Instruction_ID;
-
+    
     IF_ID stage1 (
         .clk(clk),
         .rst(rst),
+        .stall(stall),
+        .flush(pc_src),
         .pc_IF(pc),
         .Instruction_IF(Instruction),
         .pc_ID(pc_ID),
@@ -87,7 +90,13 @@ module RV32I_Pipeline(
         .imm_sel(imm_sel),
         .imm_out(imm_out)
     );
-
+    HazardUnit HU (
+        .id_ex_mem_read(ctrl_EX.mem_read),
+        .id_ex_rdaddr(ctrl_EX.rdaddr),
+        .if_id_rs1addr(rs1addr),
+        .if_id_rs2addr(rs2addr),
+        .stall(stall)
+    );
     // ID/EX register
     logic [31:0] pc_EX, rs1_EX, rs2_EX, imm_EX;
     logic [4:0] rs1addr_EX, rs2addr_EX;
@@ -96,6 +105,8 @@ module RV32I_Pipeline(
     ID_EX stage2 (
         .clk(clk),
         .rst(rst),
+        .stall(stall),
+        .flush(pc_src),
         .rs1addr_ID(rs1addr),
         .rs2addr_ID(rs2addr),
         .pc_ID(pc_ID),
@@ -136,6 +147,7 @@ module RV32I_Pipeline(
     assign ALU_A = ctrl_EX.pc_sel ? pc_EX : rs1_forward;
     assign ALU_B = ctrl_EX.alu_src ? imm_EX : rs2_forward;
 
+    
     ALU alu (
         .A(ALU_A),
         .B(ALU_B),
@@ -143,17 +155,26 @@ module RV32I_Pipeline(
         .ALU_result(ALU_result),
         .ALU_Zero(ALU_Zero)
     );
-
-    // EX/MEM register
     logic [31:0] pc_MEM, rs2_MEM, imm_MEM, ALU_result_MEM;
     logic ALU_Zero_MEM;
-    
-
+    BranchUnit BU (
+        .jump(ctrl_EX.jump),
+        .jalr(ctrl_EX.jalr),
+        .branch(ctrl_EX.branch),
+        .ALU_Zero(ALU_Zero),
+        .funct3(ctrl_EX.funct3),
+        .imm_EX(imm_EX),
+        .ALU_result(ALU_result),
+        .pc_EX(pc_EX),
+        .pc_target(pc_target),
+        .pc_src(pc_src)
+    );
+    // EX/MEM register
     EX_MEM stage3 (
         .clk(clk),
         .rst(rst),
         .pc_EX(pc_EX),
-        .rs2_EX(rs2_EX),
+        .rs2_EX(rs2_forward),
         .imm_EX(imm_EX),
         .ALU_result_EX(ALU_result),
         .ALU_Zero(ALU_Zero),
@@ -176,19 +197,6 @@ module RV32I_Pipeline(
         .w_en(ctrl_MEM.mem_write),
         .r_en(ctrl_MEM.mem_read),
         .rdata(mem_rdata)
-    );
-
-    PC_MEM pc_mem (
-        .jump(ctrl_MEM.jump),
-        .jalr(ctrl_MEM.jalr),
-        .branch(ctrl_MEM.branch),
-        .ALU_Zero(ALU_Zero_MEM),
-        .funct3(ctrl_MEM.funct3),
-        .imm_MEM(imm_MEM),
-        .ALU_result_MEM(ALU_result_MEM),
-        .pc_MEM(pc_MEM),
-        .pc_target(pc_target),
-        .pc_src(pc_src)
     );
 
     // MEM/WB register

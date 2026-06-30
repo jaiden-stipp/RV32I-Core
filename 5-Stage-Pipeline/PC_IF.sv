@@ -2,6 +2,7 @@ module PC_IF(
     input logic clk, rst,
     input logic [31:0] pc_target,
     input logic pc_src,
+    input logic stall,
     output logic [31:0] pc
 );
     logic [31:0] pc_plus4, pc_next;
@@ -10,5 +11,5 @@ module PC_IF(
 
     always_ff @(posedge clk) 
         if (rst) pc <= 32'b0;
-        else pc <= pc_next;
+        else if (!stall) pc <= pc_next;
 endmodule
