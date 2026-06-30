@@ -113,23 +113,40 @@ module RV32I_Pipeline(
     );
 
     // Stage 3: EX
-    logic [31:0] ALU_A, ALU_B, Q;
-    logic Zero;
-
-    assign ALU_A = ctrl_EX.pc_sel ? pc_EX : rs1_EX;
-    assign ALU_B = ctrl_EX.alu_src ? imm_EX : rs2_EX;
+    logic [31:0] ALU_A, ALU_B, ALU_result;
+    logic ALU_Zero;
+    // Forwarding Unit extras
+    logic [31:0] rs1_forward, rs2_forward;
+    logic [1:0] forwardA_sel, forwardB_sel;
+    
+    ForwardMux Afw (
+        .forwardSel(forwardA_sel),
+        .reg_data_EX(rs1_EX),
+        .ALU_result_MEM(ALU_result_MEM),
+        .wr_data(wr_data),
+        .reg_data_forward(rs1_forward)
+    );
+    ForwardMux Bfw (
+        .forwardSel(forwardB_sel),
+        .reg_data_EX(rs2_EX),
+        .ALU_result_MEM(ALU_result_MEM),
+        .wr_data(wr_data),
+        .reg_data_forward(rs2_forward)
+    );
+    assign ALU_A = ctrl_EX.pc_sel ? pc_EX : rs1_forward;
+    assign ALU_B = ctrl_EX.alu_src ? imm_EX : rs2_forward;
 
     ALU alu (
         .A(ALU_A),
         .B(ALU_B),
         .ALU_Sel(ctrl_EX.ALU_Sel),
-        .Q(Q),
-        .Zero(Zero)
+        .ALU_result(ALU_result),
+        .ALU_Zero(ALU_Zero)
     );
 
     // EX/MEM register
-    logic [31:0] pc_MEM, rs2_MEM, imm_MEM, Q_MEM;
-    logic Zero_MEM;
+    logic [31:0] pc_MEM, rs2_MEM, imm_MEM, ALU_result_MEM;
+    logic ALU_Zero_MEM;
     
 
     EX_MEM stage3 (
@@ -138,14 +155,14 @@ module RV32I_Pipeline(
         .pc_EX(pc_EX),
         .rs2_EX(rs2_EX),
         .imm_EX(imm_EX),
-        .Q_EX(Q),
-        .Zero(Zero),
+        .ALU_result_EX(ALU_result),
+        .ALU_Zero(ALU_Zero),
         .ctrl_EX(ctrl_EX),
         .pc_MEM(pc_MEM),
         .rs2_MEM(rs2_MEM),
         .imm_MEM(imm_MEM),
-        .Q_MEM(Q_MEM),
-        .Zero_MEM(Zero_MEM),
+        .ALU_result_MEM(ALU_result_MEM),
+        .ALU_Zero_MEM(ALU_Zero_MEM),
         .ctrl_MEM(ctrl_MEM)
     );
 
@@ -154,7 +171,7 @@ module RV32I_Pipeline(
 
     DataMem DM (
         .clk(clk),
-        .dm_addr(Q_MEM),
+        .dm_addr(ALU_result_MEM),
         .wdata(rs2_MEM),
         .w_en(ctrl_MEM.mem_write),
         .r_en(ctrl_MEM.mem_read),
@@ -165,27 +182,27 @@ module RV32I_Pipeline(
         .jump(ctrl_MEM.jump),
         .jalr(ctrl_MEM.jalr),
         .branch(ctrl_MEM.branch),
-        .Zero(Zero_MEM),
+        .ALU_Zero(ALU_Zero_MEM),
         .funct3(ctrl_MEM.funct3),
         .imm_MEM(imm_MEM),
-        .Q_MEM(Q_MEM),
+        .ALU_result_MEM(ALU_result_MEM),
         .pc_MEM(pc_MEM),
         .pc_target(pc_target),
         .pc_src(pc_src)
     );
 
     // MEM/WB register
-    logic [31:0] Q_WB, rdata_WB, pc_WB;
+    logic [31:0] ALU_result_WB, rdata_WB, pc_WB;
     
 
     MEM_WB stage4 (
         .clk(clk),
         .rst(rst),
-        .Q_MEM(Q_MEM),
+        .ALU_result_MEM(ALU_result_MEM),
         .rdata(mem_rdata),
         .pc_MEM(pc_MEM),
         .ctrl_MEM(ctrl_MEM),
-        .Q_WB(Q_WB),
+        .ALU_result_WB(ALU_result_WB),
         .rdata_WB(rdata_WB),
         .pc_WB(pc_WB),
         .ctrl_WB(ctrl_WB)
@@ -194,10 +211,20 @@ module RV32I_Pipeline(
     // Stage 5: WB
     ResultMux RM (
         .result_src(ctrl_WB.result_src),
-        .Q(Q_WB),
+        .ALU_result(ALU_result_WB),
         .mem_rdata(rdata_WB),
         .pc_plus4(pc_WB + 32'd4),
         .wr_data(wr_data)
+    );
+    ForwardingUnit FU (
+        .id_ex_rs1addr(rs1addr_EX),
+        .id_ex_rs2addr(rs2addr_EX),
+        .ex_mem_rdaddr(ctrl_MEM.rdaddr),
+        .ex_mem_reg_write(ctrl_MEM.reg_write),
+        .mem_wb_rdaddr(ctrl_WB.rdaddr),
+        .mem_wb_reg_write(ctrl_WB.reg_write),
+        .forwardA_sel(forwardA_sel),
+        .forwardB_sel(forwardB_sel)
     );
 
 endmodule
