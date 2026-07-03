@@ -25,7 +25,7 @@ vlog -sv ../RV32I_Pipeline_tb.sv
 
 # List of tests
 set tests {
-    stress
+    cpitest
 }
 
 foreach test $tests {
