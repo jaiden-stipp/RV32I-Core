@@ -74,6 +74,7 @@ module RV32I_Pipeline(
 
     RegFile RF (
         .clk(clk),
+        .rst(rst),
         .rs1addr(rs1addr),
         .rs2addr(rs2addr),
         .rdaddr(ctrl_WB.rdaddr),
@@ -129,6 +130,7 @@ module RV32I_Pipeline(
     // Forwarding Unit extras
     logic [31:0] rs1_forward, rs2_forward;
     logic [1:0] forwardA_sel, forwardB_sel;
+    logic [31:0] pc_MEM, rs2_MEM, imm_MEM, ALU_result_MEM;
     
     ForwardMux Afw (
         .forwardSel(forwardA_sel),
@@ -155,7 +157,7 @@ module RV32I_Pipeline(
         .ALU_result(ALU_result),
         .ALU_Zero(ALU_Zero)
     );
-    logic [31:0] pc_MEM, rs2_MEM, imm_MEM, ALU_result_MEM;
+    
     logic ALU_Zero_MEM;
     BranchUnit BU (
         .jump(ctrl_EX.jump),
@@ -192,6 +194,7 @@ module RV32I_Pipeline(
 
     DataMem DM (
         .clk(clk),
+        .rst(rst),
         .dm_addr(ALU_result_MEM),
         .wdata(rs2_MEM),
         .w_en(ctrl_MEM.mem_write),
@@ -234,5 +237,38 @@ module RV32I_Pipeline(
         .forwardA_sel(forwardA_sel),
         .forwardB_sel(forwardB_sel)
     );
+    // Monitor for testbench
+    // sythesis translate_off
+    logic [31:0] instruction_counter, cycle_counter;
+    logic [31:0] stall_counter, flush_counter, branch_counter, forward_counter;
 
+    logic instruction_retired;
+    logic forward_used;
+
+    assign instruction_retired =
+        ctrl_WB.reg_write ||
+        ctrl_WB.mem_write ||
+        ctrl_WB.branch ||
+        ctrl_WB.jump ||
+        ctrl_WB.jalr;
+
+    assign forward_used =
+        (forwardA_sel != 2'b00) ||
+        (forwardB_sel != 2'b00);
+
+    Monitor monitor (
+        .clk(clk),
+        .rst(rst),
+        .instruction_retired(instruction_retired),
+        .stall(stall),
+        .flush(pc_src),
+        .forward(forward_used),
+
+        .instruction_counter(instruction_counter),
+        .cycle_counter(cycle_counter),
+        .stall_counter(stall_counter),
+        .flush_counter(flush_counter),
+        .forward_counter(forward_counter)
+    );
+    // synthesis translate_on
 endmodule

@@ -10,7 +10,15 @@ module ID_EX(
     output ctrl_t ctrl_EX
 );
     always_ff @(posedge clk) begin
-        if (rst || stall || flush) begin
+        if (rst) begin
+            pc_EX <= 32'b0;
+            rs1_EX <= 32'b0;
+            rs2_EX <= 32'b0;
+            imm_EX <= 32'b0;
+            rs1addr_EX <= 5'd0;
+            rs2addr_EX <= 5'd0;
+            ctrl_EX <= '0;
+        end else if (stall || flush) begin
             pc_EX <= 32'b0;
             rs1_EX <= 32'b0;
             rs2_EX <= 32'b0;

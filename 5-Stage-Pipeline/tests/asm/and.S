@@ -1,0 +1,20 @@
+.section .text
+.globl _start
+
+_start:
+    # and
+    addi x1, x0, 12      # 1100
+    addi x2, x0, 10      # 1010
+    and  x3, x1, x2      # 1000 = 8
+    addi x4, x0, 8
+    bne  x3, x4, fail
+
+pass:
+    addi x5, x0, 1
+    sw   x5, 0(x0)
+    jal  x0, pass
+
+fail:
+    addi x5, x0, 2
+    sw   x5, 0(x0)
+    jal  x0, fail
