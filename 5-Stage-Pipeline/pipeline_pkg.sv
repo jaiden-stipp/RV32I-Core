@@ -1,28 +1,28 @@
 package pipeline_pkg;
 
     typedef enum logic [3:0] {
-        ADD  = 4'b0000,
-        SUB  = 4'b0001,
-        AND  = 4'b0010,
-        OR   = 4'b0011,
-        XOR  = 4'b0100,
-        SLT  = 4'b0101,
+        ADD = 4'b0000,
+        SUB = 4'b0001,
+        AND = 4'b0010,
+        OR  = 4'b0011,
+        XOR = 4'b0100,
+        SLT = 4'b0101,
         SLTU = 4'b0110,
-        SLL  = 4'b0111,
-        SRL  = 4'b1000,
-        SRA  = 4'b1001,
+        SLL = 4'b0111,
+        SRL = 4'b1000,
+        SRA = 4'b1001,
         PASSB = 4'b1010
     } aluops;
 
     typedef enum logic [6:0] {
-        R     = 7'b0110011,
-        I     = 7'b0010011,
-        L     = 7'b0000011,
-        S     = 7'b0100011,
-        B     = 7'b1100011,
-        JAL   = 7'b1101111,
-        JALR  = 7'b1100111,
-        LUI   = 7'b0110111,
+        R = 7'b0110011,
+        I = 7'b0010011,
+        L = 7'b0000011,
+        S = 7'b0100011,
+        B = 7'b1100011,
+        JAL = 7'b1101111,
+        JALR = 7'b1100111,
+        LUI = 7'b0110111,
         AUIPC = 7'b0010111
     } opcodes;
 

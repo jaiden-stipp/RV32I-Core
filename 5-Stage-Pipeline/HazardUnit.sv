@@ -7,7 +7,7 @@ module HazardUnit(
 );
     always_comb begin
         stall = 1'b0;
-        if (id_ex_mem_read && 
+        if (id_ex_mem_read && (id_ex_rdaddr != 5'b0) &&
         ((id_ex_rdaddr == if_id_rs1addr) || (id_ex_rdaddr == if_id_rs2addr))) 
         begin
             stall = 1'b1;

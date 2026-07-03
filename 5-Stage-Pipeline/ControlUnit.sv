@@ -24,13 +24,13 @@ module ControlUnit(
     assign pc_sel = (opcode == AUIPC);
 
     always_comb begin
-        reg_write = 1'b0; alu_src = 1'b0; imm_sel = 3'b000; mem_write = 1'b0;
+        reg_write = 1'b0; alu_src = 1'b0; imm_sel = 3'b0; mem_write = 1'b0;
         mem_read = 1'b0; branch = 1'b0; jump = 1'b0; jalr = 1'b0;
-        result_src = 2'b00; ALU_Sel = 4'b0000;
+        result_src = 2'b0; ALU_Sel = 4'b0;
         case (opcode)
             R: begin
                 reg_write = 1'b1;
-                imm_sel = 3'bxxx;
+                imm_sel = 3'b000;
                 case (funct3)
                     3'b000: ALU_Sel = funct7b5 ? SUB : ADD;
                     3'b001: ALU_Sel = SLL;
@@ -40,7 +40,7 @@ module ControlUnit(
                     3'b101: ALU_Sel = funct7b5 ? SRA : SRL;
                     3'b110: ALU_Sel = OR;
                     3'b111: ALU_Sel = AND;
-                    default: ALU_Sel = 4'bxxxx;
+                    default: ALU_Sel = ADD;
                 endcase
             end
             I: begin
@@ -55,7 +55,7 @@ module ControlUnit(
                     3'b101: ALU_Sel = funct7b5 ? SRA : SRL;
                     3'b110: ALU_Sel = OR;
                     3'b111: ALU_Sel = AND;
-                    default: ALU_Sel = 4'bxxxx;
+                    default: ALU_Sel = ADD;
                 endcase
             end
             L: begin
@@ -68,7 +68,7 @@ module ControlUnit(
                 alu_src = 1'b1;
                 imm_sel = 3'b001;
                 mem_write = 1'b1;
-                result_src = 2'bxx;
+                result_src = 2'b00;
             end
             B: begin
                 imm_sel = 3'b010;
@@ -77,9 +77,9 @@ module ControlUnit(
                     3'b000, 3'b001: ALU_Sel = SUB;
                     3'b100, 3'b101: ALU_Sel = SLT;
                     3'b110, 3'b111: ALU_Sel = SLTU;
-                    default: ALU_Sel = 4'bxxxx;
+                    default: ALU_Sel = ADD;
                 endcase
-                result_src = 2'bxx;
+                result_src = 2'b00;
             end
             JAL: begin
                 reg_write = 1'b1;
@@ -94,6 +94,7 @@ module ControlUnit(
                 jump = 1'b1;
                 jalr = 1'b1;
                 result_src = 2'b10;
+                imm_sel = 3'b000;
             end
             LUI, AUIPC: begin
                 reg_write = 1'b1;

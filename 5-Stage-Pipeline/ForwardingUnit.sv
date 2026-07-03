@@ -18,20 +18,19 @@ module ForwardingUnit (
         begin
             forwardA_sel = 2'b10;
         end
-        else if ((ex_mem_reg_write) && 
-        (ex_mem_rdaddr != 5'b0) && 
-        (ex_mem_rdaddr == id_ex_rs2addr)) 
-        begin
-            forwardB_sel = 2'b10;
-        end
-        
-        // MEM hazard
-        if ((mem_wb_reg_write) && 
+        else if ((mem_wb_reg_write) && 
         (mem_wb_rdaddr != 5'b0) && 
         !(ex_mem_reg_write && (ex_mem_rdaddr != 5'b0) && (ex_mem_rdaddr == id_ex_rs1addr)) && 
         (mem_wb_rdaddr == id_ex_rs1addr)) 
         begin
             forwardA_sel = 2'b01;
+        end
+
+        if ((ex_mem_reg_write) && 
+        (ex_mem_rdaddr != 5'b0) && 
+        (ex_mem_rdaddr == id_ex_rs2addr)) 
+        begin
+            forwardB_sel = 2'b10;
         end
         else if ((mem_wb_reg_write) && 
         (mem_wb_rdaddr != 5'b0) && 
