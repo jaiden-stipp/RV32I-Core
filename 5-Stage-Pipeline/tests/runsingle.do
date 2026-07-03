@@ -23,24 +23,20 @@ vlog -sv ../ResultMux.sv
 vlog -sv ../RV32I_Pipeline.sv
 vlog -sv ../RV32I_Pipeline_tb.sv
 
-# List of tests
-set tests {
-    cpitest
-}
 
-foreach test $tests {
+puts "Running cpitest"
 
-    
-    puts "Running $test"
+# Open GUI
+vsim work.tb_RV32I_Pipeline +TEST=programs/cpitest.hex
 
-    vsim -c -quiet -nolog work.tb_RV32I_Pipeline \
-        +TEST=programs/$test.hex
+# Open windows
+view wave
+view structure
+view signals
 
-    run -all
+# Add signals
+add wave -r sim:/tb_RV32I_Pipeline/dut/*
 
-    quit -sim
-}
-
-puts "Tests Complete"
-
-quit -f
+# Optional: zoom to fit after running
+run -all
+wave zoom full
