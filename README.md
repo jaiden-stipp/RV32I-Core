@@ -62,12 +62,12 @@ From `5-Stage-Pipeline/tests`:
 
    `python tests.py addi`
 
-2. Add test to runstress.do or a different .do under set tests:
+2. Add test to runsingle.do:
 
-    set tests {
-        cpitest
-    }
-   
+    `vsim work.tb_RV32I_Pipeline +TEST=programs/cpitest.hex`
+
+    Replace cpitest.hex with whatever specific test you want to run
+
 
 3. Run the full simulation suite:
 
