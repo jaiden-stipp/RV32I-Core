@@ -3,7 +3,7 @@
 
 _start:
     # lbu and lhu must clear the upper bits.
-    addi x1, x0, 92
+    addi x1, x0, 1024
     addi x2, x0, -1
     sb   x2, 1(x1)
     lbu  x3, 1(x1)
@@ -18,10 +18,12 @@ _start:
 
 pass:
     addi x31, x0, 1
-    sw   x31, 0(x0)
+    lui  x30, 0xF
+    sw   x31,  0(x30)
     jal  x0, pass
 
 fail:
     addi x31, x0, 2
-    sw   x31, 0(x0)
+    lui  x30, 0xF
+    sw   x31,  0(x30)
     jal  x0, fail

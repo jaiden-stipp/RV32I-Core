@@ -8,5 +8,6 @@ _start:
 
 fail:
     addi x31, x0, 2
-    sw   x31, 0(x0)
+    lui  x30, 0xF
+    sw   x31,  0(x30)
     jal  x0, fail

@@ -64,7 +64,7 @@ From `5-Stage-Pipeline/tests`:
 
 2. Add test to runsingle.do:
 
-    `vsim work.tb_RV32I_Pipeline +TEST=programs/cpitest.hex`
+    `vsim work.RV32I_Pipeline_tb +TEST=programs/cpitest.hex`
 
     Replace cpitest.hex with whatever specific test you want to run
 

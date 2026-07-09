@@ -3,7 +3,7 @@
 
 _start:
     # fence should behave as a no-op in this simple single-core model.
-    addi x1, x0, 120
+    addi x1, x0, 1024
     addi x2, x0, 99
     sw   x2, 0(x1)
     fence
@@ -13,10 +13,12 @@ _start:
 
 pass:
     addi x31, x0, 1
-    sw   x31, 0(x0)
+    lui  x30, 0xF
+    sw   x31,  0(x30)
     jal  x0, pass
 
 fail:
     addi x31, x0, 2
-    sw   x31, 0(x0)
+    lui  x30, 0xF
+    sw   x31,  0(x30)
     jal  x0, fail

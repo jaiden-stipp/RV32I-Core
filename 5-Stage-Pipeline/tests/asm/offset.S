@@ -3,7 +3,7 @@
 
 _start:
     # Positive and negative load/store offsets.
-    addi x1, x0, 112
+    addi x1, x0, 1024
     addi x2, x0, 85
     sb   x2, -4(x1)
     lbu  x3, -4(x1)
@@ -23,10 +23,12 @@ _start:
 
 pass:
     addi x31, x0, 1
-    sw   x31, 0(x0)
+    lui  x30, 0xF
+    sw   x31,  0(x30)
     jal  x0, pass
 
 fail:
     addi x31, x0, 2
-    sw   x31, 0(x0)
+    lui  x30, 0xF
+    sw   x31,  0(x30)
     jal  x0, fail

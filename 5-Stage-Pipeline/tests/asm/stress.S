@@ -17,7 +17,7 @@ _start:
     bne  x8, x9, fail
 
     # Load-use stall test
-    addi x10, x0, 100
+    addi x10, x0, 1024
     addi x11, x0, 42
     sw   x11, 0(x10)
     lw   x12, 0(x10)
@@ -40,10 +40,12 @@ branch_taken:
 
 pass:
     addi x31, x0, 1
-    sw   x31, 0(x0)
+    lui  x30, 0xF
+    sw   x31,  0(x30)
     jal  x0, pass
 
 fail:
     addi x31, x0, 2
-    sw   x31, 0(x0)
+    lui  x30, 0xF
+    sw   x31,  0(x30)
     jal  x0, fail

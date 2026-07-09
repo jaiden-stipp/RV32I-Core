@@ -3,7 +3,7 @@
 
 _start:
     # sh/lhu, including zero extension from a halfword with bit 15 set.
-    addi x1, x0, 76
+    addi x1, x0, 1024
     addi x2, x0, -1
     sh   x2, 0(x1)
     lhu  x3, 0(x1)
@@ -19,10 +19,12 @@ _start:
 
 pass:
     addi x31, x0, 1
-    sw   x31, 0(x0)
+    lui  x30, 0xF
+    sw   x31,  0(x30)
     jal  x0, pass
 
 fail:
     addi x31, x0, 2
-    sw   x31, 0(x0)
+    lui  x30, 0xF
+    sw   x31,  0(x30)
     jal  x0, fail

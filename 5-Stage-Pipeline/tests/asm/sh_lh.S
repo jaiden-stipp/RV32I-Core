@@ -3,7 +3,7 @@
 
 _start:
     # sh/lh, including sign extension from the stored halfword.
-    addi x1, x0, 72
+    addi x1, x0, 1024
     addi x2, x0, -1
     sh   x2, 2(x1)
     lh   x3, 2(x1)
@@ -18,10 +18,12 @@ _start:
 
 pass:
     addi x31, x0, 1
-    sw   x31, 0(x0)
+    lui  x30, 0xF
+    sw   x31,  0(x30)
     jal  x0, pass
 
 fail:
     addi x31, x0, 2
-    sw   x31, 0(x0)
+    lui  x30, 0xF
+    sw   x31,  0(x30)
     jal  x0, fail

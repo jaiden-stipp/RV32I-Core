@@ -9,10 +9,12 @@ _start:
 
 pass:
     addi x5, x0, 1
-    sw   x5, 0(x0)
+    lui  x30, 0xF
+    sw   x5,  0(x30)
     jal  x0, pass
 
 fail:
     addi x5, x0, 2
-    sw   x5, 0(x0)
+    lui  x30, 0xF
+    sw   x5,  0(x30)
     jal  x0, fail

@@ -1,6 +1,6 @@
 `timescale 1ns/1ps
 
-module tb_RV32I_Pipeline;
+module RV32I_Pipeline_tb;
 
     logic clk;
     logic rst;
@@ -13,6 +13,7 @@ module tb_RV32I_Pipeline;
     string testfile;
     integer cycles;
     integer max_cycles;
+    localparam int TEST_STATUS_WORD = 32'h0000_F000 >> 2;
     
 
     initial clk = 0;
@@ -27,7 +28,8 @@ module tb_RV32I_Pipeline;
         end
         
         $display("Loading program: %s", testfile);
-        $readmemh(testfile, dut.IM.mem);
+        $readmemh(testfile, dut.UM.mem);
+        dut.UM.mem[TEST_STATUS_WORD] = 32'd0;
 
         rst = 1;
         cycles = 0;
@@ -46,12 +48,22 @@ module tb_RV32I_Pipeline;
                 showStats();
                 $finish;
             end
-            if (dut.DM.mem[0] == 32'd1) begin
+            if (dut.ctrl_MEM.mem_write && dut.ALU_result_MEM < 32'h00000200) begin
+                $warning("Store to low/code memory: addr=%h data=%h pc_MEM=%h", dut.ALU_result_MEM, dut.rs2_MEM, dut.pc_MEM);
+                showStats();
+                $finish;
+            end
+            if (dut.misaligned) begin
+                $warning("Misaligned memory access: addr=%h data=%h funct3=%b pc_MEM=%h", dut.ALU_result_MEM, dut.rs2_MEM, dut.ctrl_MEM.funct3, dut.pc_MEM);
+                showStats();
+                $finish;
+            end
+            if (dut.UM.mem[TEST_STATUS_WORD] == 32'd1) begin
                 $display("%s Passed", testfile);
                 showStats();
                 $finish;
             end
-            if (dut.DM.mem[0] == 32'd2) begin
+            if (dut.UM.mem[TEST_STATUS_WORD] == 32'd2) begin
                 $display("%s Failed :(", testfile);
                 showStats();
                 $finish;
@@ -61,7 +73,7 @@ module tb_RV32I_Pipeline;
                 $display("PC: %h", dut.pc);
                 $display("Instruction IF: %h", dut.Instruction);
                 $display("Instruction ID: %h", dut.Instruction_ID);
-                $display("DM[0]: %h", dut.DM.mem[0]);
+                $display("TEST_STATUS[0x0000_F000]: %h", dut.UM.mem[TEST_STATUS_WORD]);
                 showStats();
                 $finish;
             end

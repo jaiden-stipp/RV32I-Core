@@ -2,8 +2,8 @@
 .globl _start
 
 _start:
-    # Seed memory at address 64 with value 42.
-    addi x10, x0, 64
+    # Seed memory at a data address with value 42.
+    addi x10, x0, 1024
     addi x11, x0, 42
     sw   x11, 0(x10)
 
@@ -20,10 +20,12 @@ _start:
 
 pass:
     addi x5, x0, 1
-    sw   x5, 0(x0)
+    lui  x30, 0xF
+    sw   x5,  0(x30)
     jal  x0, pass
 
 fail:
     addi x5, x0, 2
-    sw   x5, 0(x0)
+    lui  x30, 0xF
+    sw   x5,  0(x30)
     jal  x0, fail

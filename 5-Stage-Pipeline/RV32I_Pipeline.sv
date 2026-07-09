@@ -25,11 +25,6 @@ module RV32I_Pipeline(
         .pc(pc)
     );
 
-    InstructionMem IM (
-        .pc(pc),
-        .Instruction(Instruction)
-    );
-
     // IF/ID register
     logic [31:0] pc_ID, Instruction_ID;
     
@@ -201,18 +196,22 @@ module RV32I_Pipeline(
 
     // Stage 4: MEM
     logic [31:0] mem_rdata;
+    logic misaligned;
 
-    DataMem DM (
+    UnifiedMem UM (
         .clk(clk),
-        .rst(rst),
-        .dm_addr(ALU_result_MEM),
-        .wdata(rs2_MEM),
-        .funct3(ctrl_MEM.funct3),
-        .w_en(ctrl_MEM.mem_write),
-        .r_en(ctrl_MEM.mem_read),
-        .rdata(mem_rdata)
-    );
+        
+        .pc(pc),
+        .Instruction(Instruction),
 
+        .d_addr(ALU_result_MEM),
+        .d_wdata(rs2_MEM),
+        .d_funct3(ctrl_MEM.funct3),
+        .dw_en(ctrl_MEM.mem_write),
+        .dr_en(ctrl_MEM.mem_read),
+        .d_rdata(mem_rdata),
+        .misaligned(misaligned)
+    );
     // MEM/WB register
     logic [31:0] ALU_result_WB, rdata_WB, pc_WB;
     
