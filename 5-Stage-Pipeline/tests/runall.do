@@ -33,7 +33,16 @@ set tests {
     beq
     bne
     dual_forward
+    # These tests will all "fail", they are in place to test that they fail in specific ways
+    ebreak
+    ecall
+    misaligned_lh
+    misaligned_lw
+    misaligned_sh
+    misaligned_sw
+    # Working again
     jal
+    jalr
     jalr_link
     load_branch_hazard
     or
@@ -42,7 +51,16 @@ set tests {
     sra
     srl
     sub
+    sb_lb
+    sb_lbu
+    sh_lh
+    sh_lhu
+    sw_lw_regression
     sw_lw
+    sign_extension
+    zero_extension
+    offset
+    fence
     xor
     xori
     stress
