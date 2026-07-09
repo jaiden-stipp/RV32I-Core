@@ -17,6 +17,8 @@ The pipelined version is the main focus and includes:
 - Hazard detection for load-use stalls
 - Forwarding paths to reduce bubbles
 - Branch and jump control (`beq`, `bne`, signed/unsigned compare branches, `jal`, `jalr`)
+- Unified instruction/data memory through `UnifiedMem.sv`
+- Memory alignment detection for byte/halfword/word accesses
 - Basic performance counters through `Monitor.sv` (cycles, instructions, stalls, flushes, forwards)
 
 
@@ -26,9 +28,12 @@ The pipelined version is the main focus and includes:
 - `5-Stage-Pipeline/`
 - `5-Stage-Pipeline/RV32I_Pipeline.sv`: top-level pipelined CPU
 - `5-Stage-Pipeline/RV32I_Pipeline_tb.sv`: testbench
+- `5-Stage-Pipeline/UnifiedMem.sv`: unified memory used for instruction fetch and data access
 - `5-Stage-Pipeline/tests/asm/`: assembly tests (`.S`)
-- `5-Stage-Pipeline/tests/programs/`: generated hex programs for instruction memory
+- `5-Stage-Pipeline/tests/programs/`: generated hex programs loaded into unified memory
+- `5-Stage-Pipeline/tests/assemble_all.py`: rebuilds all assembly tests by calling `tests.py`
 - `5-Stage-Pipeline/tests/runall.do`: ModelSim batch run for the full suite
+- `5-Stage-Pipeline/software/`: bare-metal C flow using `ctrl0.S`, `link.ld`, and `c.py`
 - `SingleCore/`: earlier single-cycle implementation and testbenches
 
 ## Supported Instruction Categories (Current)
@@ -37,10 +42,11 @@ The tests in `5-Stage-Pipeline/tests/asm/` currently cover core RV32I categories
 
 - R-type ALU: `add`, `sub`, `and`, `or`, `xor`, `sll`, `srl`, `sra`
 - I-type ALU: `addi`, `andi`, `ori`, `xori`
-- Memory: `lw`, `sw`
+- Memory: `lb`, `lbu`, `lh`, `lhu`, `lw`, `sb`, `sh`, `sw`
 - Branches: `beq`, `bne`, plus signed/unsigned branch matrix tests
 - Jumps: `jal`, `jalr`
 - Pipeline-focused directed tests: load-use hazards, dual forwarding, branch condition matrix, jalr link behavior
+- Misaligned memory access tests for halfword and word loads/stores
 
 ## Test Strategy
 
@@ -48,9 +54,17 @@ Each assembly test follows the same structure:
 
 - run instruction sequence
 - branch to `pass` or `fail`
-- write `1` (pass) or `2` (fail) to data memory location `0`
+- write `1` (pass) or `2` (fail) to test status address `0x0000_F000`
 
-The testbench watches `DM.mem[0]` and prints pass/fail and counters.
+The testbench watches `dut.UM.mem[0x0000_F000 >> 2]` and prints pass/fail and counters.
+
+Because the pipelined core now uses unified memory, assembly tests should keep normal data stores away from the code region. The current convention is:
+
+- addresses below `0x0000_0200`: treated as low/code memory by the testbench guard
+- `0x0000_0200` and above: test data space
+- `0x0000_F000`: pass/fail test status
+
+The testbench also stops and reports context on misaligned memory accesses using the core's `misaligned` signal.
 
 This was built out so that I can write programs to test the processor easier.
 
@@ -62,21 +76,34 @@ From `5-Stage-Pipeline/tests`:
 
    `python tests.py addi`
 
-2. Add test to runsingle.do:
+2. Build hex for every assembly test:
+
+   `python assemble_all.py`
+
+3. Run a single test in ModelSim:
 
     `vsim work.RV32I_Pipeline_tb +TEST=programs/cpitest.hex`
 
     Replace cpitest.hex with whatever specific test you want to run
 
-
-3. Run the full simulation suite:
+4. Run the full simulation suite:
 
    `vsim -c -do runall.do`
+
+5. Build a bare-metal C program:
+
+   From `5-Stage-Pipeline/software`:
+
+   `python c.py add`
+
+   This uses `ctrl0.S` for startup, `link.ld` for the memory map, and emits `software/programs/add.hex`.
 
 Notes:
 
 - `tests.py` expects a RISC-V GCC toolchain in PATH (for example `riscv64-unknown-elf-gcc`).
-- `runall.do` and `runstress.do` use ModelSim/Questa batch mode.
+- `software/c.py` uses the same RISC-V GCC toolchain and links with `-ffreestanding`, `-nostdlib`, and `-nostartfiles`.
+- `runall.do` uses ModelSim/Questa batch mode.
+- If ModelSim reports that `tests/work/_info` is permission denied, close any still-running `vsim` process or recreate the `work` library.
 
 ## What I Learned
 
