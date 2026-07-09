@@ -20,5 +20,6 @@ The script emits:
 - `elf/blink.elf`
 - `bin/blink.bin`
 - `programs/blink.hex`
+- `programs/blink.mif`
 
-The generated `.hex` can be loaded into the SoC RAM for simulation or FPGA memory initialization.
+The generated `.mif` can be loaded into the SoC RAM for simulation or FPGA memory initialization.

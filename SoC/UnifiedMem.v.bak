@@ -114,7 +114,7 @@ module UnifiedMem (
 		altsyncram_component.clock_enable_output_b = "BYPASS",
 		altsyncram_component.indata_reg_b = "CLOCK0",
 `ifdef NO_PLI
-		altsyncram_component.init_file = "software/programs/blink.mif"
+		altsyncram_component.init_file = "software/programs/blink.rif"
 `else
 		altsyncram_component.init_file = "software/programs/blink.mif"
 `endif

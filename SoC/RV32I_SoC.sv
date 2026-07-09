@@ -2,7 +2,9 @@ module RV32I_SoC(
     input logic clk,
     input logic rst,
     input logic [31:0] gpio_in,
-    output logic [31:0] gpio_out
+    output logic [31:0] gpio_out,
+    output logic [31:0] debug_pc,
+    output logic [7:0] debug_status
 );
     logic [31:0] instruction;
     logic [31:0] mem_rdata;
@@ -23,6 +25,44 @@ module RV32I_SoC(
     logic gpio_wen;
     logic gpio_ren;
     logic misaligned;
+    logic gpio_write_seen;
+    logic ram_write_seen;
+    logic ram_read_seen;
+    logic misaligned_seen;
+
+    assign debug_pc = pc;
+    assign debug_status = {
+        rst,
+        gpio_write_seen,
+        ram_write_seen,
+        ram_read_seen,
+        gpio_sel,
+        ram_sel,
+        misaligned_seen,
+        gpio_out[0]
+    };
+
+    always_ff @(posedge clk) begin
+        if (rst) begin
+            gpio_write_seen <= 1'b0;
+            ram_write_seen <= 1'b0;
+            ram_read_seen <= 1'b0;
+            misaligned_seen <= 1'b0;
+        end else begin
+            if (gpio_wen) begin
+                gpio_write_seen <= 1'b1;
+            end
+            if (ram_wen) begin
+                ram_write_seen <= 1'b1;
+            end
+            if (ram_ren) begin
+                ram_read_seen <= 1'b1;
+            end
+            if (misaligned) begin
+                misaligned_seen <= 1'b1;
+            end
+        end
+    end
 
     RV32I_Pipeline CPU (
         .clk(clk),

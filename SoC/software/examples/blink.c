@@ -1,8 +1,9 @@
 #define GPIO_OUT (*(volatile unsigned int *)0x10000000u)
 
-static void delay(void)
+static void delay(unsigned int led)
 {
-    for (volatile unsigned int i = 0; i < 50000u; i++) {
+    for (unsigned int i = 0; i < 5000000u; i++) {
+        GPIO_OUT = led;
     }
 }
 
@@ -12,7 +13,7 @@ int main(void)
 
     while (1) {
         GPIO_OUT = led;
-        delay();
+        delay(led);
         led ^= 1;
     }
 }

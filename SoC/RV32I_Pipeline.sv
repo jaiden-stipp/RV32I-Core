@@ -35,13 +35,22 @@ module RV32I_Pipeline(
 
     // IF/ID register
     logic [31:0] pc_ID, Instruction_ID;
+    logic [31:0] pc_return_IF;
+
+    always_ff @(posedge clk) begin
+        if (rst) begin
+            pc_return_IF <= 32'b0;
+        end else if (!stall) begin
+            pc_return_IF <= pc_out;
+        end
+    end
     
     IF_ID stage1 (
         .clk(clk),
         .rst(rst),
         .stall(stall),
         .flush(pc_src),
-        .pc_IF(pc_out),
+        .pc_IF(pc_return_IF),
         .Instruction_IF(Instruction),
         .pc_ID(pc_ID),
         .Instruction_ID(Instruction_ID)
