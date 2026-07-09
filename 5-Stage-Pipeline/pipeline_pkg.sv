@@ -23,7 +23,8 @@ package pipeline_pkg;
         JAL = 7'b1101111,
         JALR = 7'b1100111,
         LUI = 7'b0110111,
-        AUIPC = 7'b0010111
+        AUIPC = 7'b0010111,
+        FENCE = 7'b0001111
     } opcodes;
 
     // Prefixed to avoid conflict with opcodes members I, S, B
@@ -35,6 +36,14 @@ package pipeline_pkg;
         J_TYPE = 3'b100
     } instructiontypes;
 
+    typedef enum logic [2:0] {
+        BYTE = 3'b000,
+        HALF = 3'b001,
+        WORD = 3'b010,
+        BYTEU = 3'b100,
+        HALFU = 3'b101
+    } loadtypes;
+    
     typedef struct packed {
         // WB
         logic reg_write;

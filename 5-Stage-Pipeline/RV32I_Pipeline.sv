@@ -4,6 +4,13 @@ module RV32I_Pipeline(
     input clk,
     input rst
 );
+
+
+    //temp 
+    logic [31:0] mtvec;
+
+    assign mtvec = 32'h00000100;
+
 	ctrl_t ctrl_WB, ctrl_ID, ctrl_EX, ctrl_MEM;
     // Stage 1: IF
     logic [31:0] pc, pc_target, Instruction;
@@ -47,7 +54,10 @@ module RV32I_Pipeline(
     assign rs1addr = Instruction_ID[19:15];
     assign rs2addr = Instruction_ID[24:20];
     assign funct7 = Instruction_ID[31:25];
+    logic halt;
 
+    assign halt = (Instruction_ID == 32'h00000073) || (Instruction_ID == 32'h00100073); // ecall or ebreak, not used in this implementation but need to pass through
+    
     logic [2:0] imm_sel;
 
     ControlUnit CU (
@@ -197,6 +207,7 @@ module RV32I_Pipeline(
         .rst(rst),
         .dm_addr(ALU_result_MEM),
         .wdata(rs2_MEM),
+        .funct3(ctrl_MEM.funct3),
         .w_en(ctrl_MEM.mem_write),
         .r_en(ctrl_MEM.mem_read),
         .rdata(mem_rdata)

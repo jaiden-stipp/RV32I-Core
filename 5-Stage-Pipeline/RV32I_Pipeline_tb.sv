@@ -40,10 +40,12 @@ module tb_RV32I_Pipeline;
     always @(posedge clk) begin
         if (!rst) begin
             cycles <= cycles + 1;
-            
 
-            
-
+            if (dut.halt) begin
+                $display("INSTRUCTION HALT");
+                showStats();
+                $finish;
+            end
             if (dut.DM.mem[0] == 32'd1) begin
                 $display("%s Passed", testfile);
                 showStats();

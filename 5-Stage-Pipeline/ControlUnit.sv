@@ -102,6 +102,17 @@ module ControlUnit(
                 imm_sel = 3'b011;
                 ALU_Sel = opcode[5] ? PASSB : ADD;
             end
+            FENCE: begin
+                reg_write = 1'b0;
+                alu_src = 1'b0;
+                mem_write = 1'b0;
+                mem_read = 1'b0;
+                branch = 1'b0;
+                jump = 1'b0;
+                jalr = 1'b0;
+                result_src = 2'b00;
+                ALU_Sel = ADD;
+            end
         endcase
     end
 endmodule
