@@ -2,7 +2,13 @@ import pipeline_pkg::*;
 
 module RV32I_Pipeline(
     input logic clk,
-    input logic rst
+    input logic rst,
+    input logic [31:0] Instruction_in,
+    input logic [31:0] mem_rdata,
+    output logic [31:0] pc_out,
+    output logic [31:0] d_addr, d_wdata,
+    output logic [2:0] d_funct3,
+    output logic dw_en, dr_en
 );
 
 
@@ -11,10 +17,12 @@ module RV32I_Pipeline(
 
     assign mtvec = 32'h00000100;
 
-	ctrl_t ctrl_WB, ctrl_ID, ctrl_EX, ctrl_MEM;
+    ctrl_t ctrl_WB, ctrl_ID, ctrl_EX, ctrl_MEM;
     // Stage 1: IF
     logic [31:0] pc, pc_target, Instruction;
     logic pc_src, stall;
+
+    assign Instruction = Instruction_in;
 
     PC_IF pc_if (
         .clk(clk),
@@ -22,7 +30,7 @@ module RV32I_Pipeline(
         .pc_target(pc_target),
         .pc_src(pc_src),
         .stall(stall),
-        .pc(pc)
+        .pc(pc_out)
     );
 
     // IF/ID register
@@ -33,7 +41,7 @@ module RV32I_Pipeline(
         .rst(rst),
         .stall(stall),
         .flush(pc_src),
-        .pc_IF(pc),
+        .pc_IF(pc_out),
         .Instruction_IF(Instruction),
         .pc_ID(pc_ID),
         .Instruction_ID(Instruction_ID)
@@ -195,23 +203,12 @@ module RV32I_Pipeline(
     );
 
     // Stage 4: MEM
-    logic [31:0] mem_rdata;
-    logic misaligned;
-
-    UnifiedMem UM (
-        .clk(clk),
-        
-        .pc(pc),
-        .Instruction(Instruction),
-
-        .d_addr(ALU_result_MEM),
-        .d_wdata(rs2_MEM),
-        .d_funct3(ctrl_MEM.funct3),
-        .dw_en(ctrl_MEM.mem_write),
-        .dr_en(ctrl_MEM.mem_read),
-        .d_rdata(mem_rdata),
-        .misaligned(misaligned)
-    );
+    assign d_addr = ALU_result_MEM;
+    assign d_wdata = rs2_MEM;
+    assign d_funct3 = ctrl_MEM.funct3;
+    assign dw_en = ctrl_MEM.mem_write;
+    assign dr_en = ctrl_MEM.mem_read;
+    
     // MEM/WB register
     logic [31:0] ALU_result_WB, rdata_WB, pc_WB;
     
@@ -248,7 +245,7 @@ module RV32I_Pipeline(
         .forwardB_sel(forwardB_sel)
     );
     // Monitor for testbench
-    // sythesis translate_off
+    // synthesis translate_off
     logic [31:0] instruction_counter, cycle_counter;
     logic [31:0] stall_counter, flush_counter, branch_counter, forward_counter;
 
