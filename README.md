@@ -8,10 +8,18 @@ The project evolved from a single-cycle RV32I implementation into a fully pipeli
 
 This project implements a subset of the RISC-V ISA (RV32I) in two versions:
 
-- `SingleCore/`: a single-cycle baseline core
-![RTL synthesized view of single-cycle processor](image-1.png)
-- `5-Stage-Pipeline/`: a pipelined core (IF/ID/EX/MEM/WB)
-![RTL synthesized view of 5-stage Processor](image.png)
+- **`SingleCore`** a single-cycle baseline core
+  
+<img width="2244" height="760" alt="image" src="https://github.com/user-attachments/assets/46a516ea-b633-4e17-a099-c9938fc943a3" />
+
+- **`5-Stage-Pipeline`**: a pipelined core (IF/ID/EX/MEM/WB)
+  
+<img width="1867" height="511" alt="image" src="https://github.com/user-attachments/assets/052bbae5-f3bb-444c-a7c5-f06a73242296" />
+
+- **`SoC`**: SoC implementation
+  
+<img width="2497" height="801" alt="image" src="https://github.com/user-attachments/assets/467013e5-85b8-4cbe-b003-ac60113b2c17" />
+
 
 The pipelined version is the main focus and includes:
 
