@@ -31,15 +31,17 @@ module RV32I_SoC(
     logic misaligned_seen;
 
     assign debug_pc = pc;
+    
+    // Debug status is displayed on HEX 5 and 4, giving a debug status on the current instruction
     assign debug_status = {
-        rst,
-        gpio_write_seen,
-        ram_write_seen,
-        ram_read_seen,
-        gpio_sel,
-        ram_sel,
-        misaligned_seen,
-        gpio_out[0]
+        rst, // bit 7
+        gpio_write_seen, // bit 6
+        ram_write_seen, // bit 5
+        ram_read_seen, // bit 4
+        gpio_sel, // bit 3
+        ram_sel, // bit 2
+        misaligned_seen, // bit 1
+        gpio_out[0] // bit 0
     };
 
     always_ff @(posedge clk) begin

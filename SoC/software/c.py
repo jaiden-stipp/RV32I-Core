@@ -7,13 +7,14 @@ ROOT = Path(__file__).resolve().parent
 EXAMPLES_DIR = ROOT / "examples"
 ELF_DIR = ROOT / "elf"
 BIN_DIR = ROOT / "bin"
+ASM_DIR = ROOT / "asm"
 PROGRAM_DIR = ROOT / "programs"
 
 TOOL = "riscv64-unknown-elf"
 RAM_WORDS = 16384
 RAM_WIDTH = 32
 
-
+# Finds the C file
 def find_c_file(program):
     candidates = [
         ROOT / f"{program}.c",
@@ -27,7 +28,7 @@ def find_c_file(program):
     print(f"Error: could not find {program}.c in {ROOT} or {EXAMPLES_DIR}")
     sys.exit(1)
 
-
+# Grabs the bin file and converts it into a hex format
 def write_hex(bin_file, hex_file):
     data = bin_file.read_bytes()
 
@@ -37,7 +38,7 @@ def write_hex(bin_file, hex_file):
             value = int.from_bytes(word, byteorder="little")
             f.write(f"{value:08x}\n")
 
-
+# Grabs the bin file and converts it into a mif format
 def write_mif(bin_file, mif_file):
     data = bin_file.read_bytes()
     word_count = (len(data) + 3) // 4
@@ -71,10 +72,12 @@ def main():
 
     ELF_DIR.mkdir(exist_ok=True)
     BIN_DIR.mkdir(exist_ok=True)
+    ASM_DIR.mkdir(exist_ok=True)
     PROGRAM_DIR.mkdir(exist_ok=True)
 
     elf = ELF_DIR / f"{program}.elf"
     bin_file = BIN_DIR / f"{program}.bin"
+    asm_file = ASM_DIR / f"{program}.asm"
     hex_file = PROGRAM_DIR / f"{program}.hex"
     mif_file = PROGRAM_DIR / f"{program}.mif"
 
@@ -99,6 +102,15 @@ def main():
         str(elf.relative_to(ROOT)),
         str(bin_file.relative_to(ROOT)),
     ], cwd=ROOT, check=True)
+
+    # Makes it easier to debug
+    with asm_file.open("w") as output:
+        subprocess.run([
+            f"{TOOL}-objdump",
+            "-d",
+            "-S",
+            str(elf.relative_to(ROOT)),
+        ], cwd=ROOT, stdout=output, check=True)
 
     write_hex(bin_file, hex_file)
     write_mif(bin_file, mif_file)

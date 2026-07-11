@@ -19,6 +19,7 @@ The script emits:
 
 - `elf/blink.elf`
 - `bin/blink.bin`
+- `asm/blink.asm`
 - `programs/blink.hex`
 - `programs/blink.mif`
 

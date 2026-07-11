@@ -2,7 +2,7 @@
 
 static void delay(unsigned int led)
 {
-    for (unsigned int i = 0; i < 5000000u; i++) {
+    for (unsigned int i = 0; i < 5u; i++) {
         GPIO_OUT = led;
     }
 }

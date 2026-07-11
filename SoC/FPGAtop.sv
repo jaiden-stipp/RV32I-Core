@@ -12,9 +12,19 @@ module FPGAtop(
     logic [31:0] gpio_out;
     logic [31:0] debug_pc;
     logic [7:0] debug_status;
+    logic cpu_clk;
+
+    // Slow the 50 MHz board clock to 2 Hz so PC changes are visible.
+    ClockDivider #(
+        .INPUT_HZ(50_000_000),
+        .OUTPUT_HZ(10)
+    ) clock_divider (
+        .clk_in(clk),
+        .clk_out(cpu_clk)
+    );
 
     RV32I_SoC soc (
-        .clk(clk),
+        .clk(cpu_clk),
         .rst(SW0),
         .gpio_in(32'b0),
         .gpio_out(gpio_out),

@@ -12,7 +12,7 @@ module RV32I_Pipeline(
 );
 
 
-    //temp 
+    // Temporary placeholder for future trap-vector support.
     logic [31:0] mtvec;
 
     assign mtvec = 32'h00000100;
@@ -36,20 +36,24 @@ module RV32I_Pipeline(
     // IF/ID register
     logic [31:0] pc_ID, Instruction_ID;
     logic [31:0] pc_return_IF;
+    logic pc_src_delayed;
 
     always_ff @(posedge clk) begin
         if (rst) begin
-            pc_return_IF <= 32'b0;
-        end else if (!stall) begin
-            pc_return_IF <= pc_out;
+            pc_return_IF  <= 32'b0;
+            pc_src_delayed <= 1'b0;
+        end else begin
+            pc_src_delayed <= pc_src;
+
+            if (!stall)
+                pc_return_IF <= pc_out;
         end
     end
-    
     IF_ID stage1 (
         .clk(clk),
         .rst(rst),
         .stall(stall),
-        .flush(pc_src),
+        .flush(pc_src || pc_src_delayed),
         .pc_IF(pc_return_IF),
         .Instruction_IF(Instruction),
         .pc_ID(pc_ID),
@@ -123,7 +127,6 @@ module RV32I_Pipeline(
     // ID/EX register
     logic [31:0] pc_EX, rs1_EX, rs2_EX, imm_EX;
     logic [4:0] rs1addr_EX, rs2addr_EX;
-    
 
     ID_EX stage2 (
         .clk(clk),
@@ -171,7 +174,6 @@ module RV32I_Pipeline(
     assign ALU_A = ctrl_EX.pc_sel ? pc_EX : rs1_forward;
     assign ALU_B = ctrl_EX.alu_src ? imm_EX : rs2_forward;
 
-    
     ALU alu (
         .A(ALU_A),
         .B(ALU_B),
@@ -217,10 +219,9 @@ module RV32I_Pipeline(
     assign d_funct3 = ctrl_MEM.funct3;
     assign dw_en = ctrl_MEM.mem_write;
     assign dr_en = ctrl_MEM.mem_read;
-    
+
     // MEM/WB register
     logic [31:0] ALU_result_WB, rdata_WB, pc_WB;
-    
 
     MEM_WB stage4 (
         .clk(clk),
